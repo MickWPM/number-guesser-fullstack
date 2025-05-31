@@ -11,6 +11,7 @@ MIN_NUMBER = 0
 MAX_NUMBER = 10
 LEADERBOARD_FILE = 'leaderboard.json'
 MAX_LEADERBOARD_ENTRIES = 5
+NEW_GAME_MESSAGE = f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'
 
 @app.route('/')
 def home():
@@ -22,7 +23,8 @@ def new_game():
     secret_number = random.randint(MIN_NUMBER, MAX_NUMBER)
     attempts_count = 0
     game_over = False
-    return jsonify({'message':f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'})
+    print(f'Secret number generated as {secret_number}')
+    return jsonify({'message':NEW_GAME_MESSAGE})
 
 @app.route('/api/guess', methods=['POST'])
 def guess_number():
