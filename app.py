@@ -12,6 +12,8 @@ MAX_NUMBER = 10
 LEADERBOARD_FILE = 'leaderboard.json'
 MAX_LEADERBOARD_ENTRIES = 5
 NEW_GAME_MESSAGE = f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'
+GUESS_LOW_MESSAGE = 'Too low! :('
+GUESS_HIGH_MESSAGE = 'Too high! :('
 
 @app.route('/')
 def home():
@@ -51,9 +53,9 @@ def guess_number():
         feedback = f'You guessed it in {attempts_count}!'
         game_over = True
     elif player_guess > secret_number:
-        feedback = 'Too high! :('
+        feedback = GUESS_HIGH_MESSAGE
     else:
-        feedback = 'Too low! :('
+        feedback = GUESS_LOW_MESSAGE
     
     return jsonify({
         'feedback': feedback,
