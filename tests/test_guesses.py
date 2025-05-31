@@ -1,6 +1,6 @@
 import pytest
 import json
-from app import app
+from app import app, GUESS_LOW_MESSAGE, GUESS_HIGH_MESSAGE
 
 def test_guess_api_with_valid_guess(client):
     client.get('/api/new_game')
@@ -48,6 +48,7 @@ def test_guess_api_with_high_guess(game_with_known_secret):
     assert response.content_type == 'application/json'
     data = response.json
     
+    assert GUESS_HIGH_MESSAGE in data['feedback']
     assert data['game_over'] == False
 
 def test_guess_api_with_low_guess(game_with_known_secret):
@@ -64,6 +65,7 @@ def test_guess_api_with_low_guess(game_with_known_secret):
     assert response.content_type == 'application/json'
     data = response.json
     
+    assert GUESS_LOW_MESSAGE in data['feedback']
     assert data['game_over'] == False
 
     
