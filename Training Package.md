@@ -1,200 +1,407 @@
-# Training Package: "Quick Draw Numbers" MVP (10-15 Hours)
+# Training Package: "Quick Draw Numbers" MVP V1.1
 
 ## 1. Project Recap:
 
 * **Name:** Quick Draw Numbers
-* **Goal:** Build a web-based number guessing game where players guess a number between 1 and 1000. The backend (Python/Flask) provides an API for game logic and a shared leaderboard. The frontend (HTML, CSS, JavaScript) allows interaction.
-* **Core Features:** New game, guess submission, high/low/correct feedback, attempts tracking, optional name submission to a shared JSON-based leaderboard.
+* **Goal:** Build a web-based number guessing game where players guess a number between 1 and 1000. The backend (Python/Flask) provides an API for game logic and a shared leaderboard. The frontend (HTML, CSS, JavaScript) allows interaction. The project includes automated API testing and deployment to a cloud host.
+* **Core Features:** New game, guess submission, high/low/correct feedback, attempts tracking, optional name submission to a shared JSON-based leaderboard, automated API tests, cloud deployment.
 * **Tech Stack:**
     * **Frontend:** HTML, Basic CSS (or minimal Bootstrap), Vanilla JavaScript (Fetch API)
     * **Backend:** Python, Flask
+    * **Testing:** Pytest
+    * **CI/CD:** GitHub Actions
     * **Storage:** In-memory for current game state (secret number, attempts), JSON file for leaderboard.
-* **Target Time:** 10-15 hours
+    * **Deployment:** PythonAnywhere (target)
+* **Target Time:** **11 - 17 hours** (adjusted for testing and deployment)
 
 ## 2. Prerequisites & Setup:
 
 * **Python 3:** Ensure Python 3 is installed on your system.
 * **Text Editor:** A good text editor or IDE (e.g., VS Code, Sublime Text, PyCharm Community).
 * **Web Browser:** For testing (Chrome, Firefox, Edge).
-* **Flask Installation:** Open your terminal or command prompt and run: `pip install Flask`
+* **Git & GitHub Account:** For version control and GitHub Actions.
+* **Flask & Pytest Installation:**
+    * Create and activate a virtual environment (recommended).
+    * `pip install Flask pytest`
 * **Project Folder:** Create a main folder for your project (e.g., `quick_draw_game`). Inside it, create:
     * `app.py` (for your Flask backend code)
     * A `templates` folder (for `index.html`)
     * A `static` folder (for `style.css` and `script.js`)
+    * A `tests` folder (for test files)
 
-## 3. Overall Time Management:
+## 3. Overall Time Management & Testing Strategy:
 
-This plan is broken into phases. Try to stick to the estimated times, but they are flexible. If you finish a section early, move on. If you get stuck, don't spend too long – simplify or make a note to revisit if time allows. **Test frequently!**
+This plan is broken into phases. Sticking to estimated times is good, but flexibility is key. **Test frequently!**
+
+**Testing Strategy:**
+While this plan doesn't enforce strict Test-Driven Development (TDD) for every function, the aim is to:
+1. Implement a piece of backend API functionality.
+2. **Immediately write automated tests (using Pytest) for that new API functionality.**
+3. Ensure tests pass before moving to implement the frontend consuming that API, or before starting the next piece of backend functionality.
+4. Use GitHub Actions to run these tests automatically on each push/pull request, providing continuous feedback.
 
 ---
 
-## Phase 1: Backend Foundation & Core Game Logic (Flask) (Est. 3 - 4 hours)
+## Phase 1: Backend Foundation & Core Game Logic (Flask) (Est. 1-2 hours)
 
 * **Objective:** Create the Flask server, API endpoints for starting a game, and making a guess. The secret number will be stored in memory.
-
 * **Tasks:**
-    1.  **Basic Flask App Setup (0.5 - 1 hour)**
-        * In `app.py`, import `Flask`, `jsonify`, `request` from `flask` and `random`.
-        * Initialize your Flask app: `app = Flask(__name__)`.
-        * Create a global variable (or variables within your app context) to store `secret_number` and `attempts_count`. Initialize them (e.g., `secret_number = 0`, `attempts_count = 0`).
-        * Define `LEADERBOARD_FILE = 'leaderboard.json'`.
-        * Create a basic route `@app.route('/')` that serves your `index.html` file.
-            ```python
-            from flask import Flask, render_template, jsonify, request
-            import random
-            import json # Import for leaderboard
-            import os # Import for checking if leaderboard file exists
+    1.  **Basic Flask App Setup (0.25 - 0.5 hour)**
+        * In `app.py`, import `Flask`, `jsonify`, `request` from `flask`, `random`, `json`, `os`.
+        * Initialize Flask app.
+        * Define global variables (`secret_number`, `attempts_count`, `game_over`, `MIN_NUMBER`, `MAX_NUMBER`, `LEADERBOARD_FILE`, `MAX_LEADERBOARD_ENTRIES`).
+        * Create `@app.route('/')` to serve `index.html`.
+        * Basic `if __name__ == '__main__': app.run(debug=True)`.
+        * **Test (Manual):** Run `python app.py`. (Browser will error until `index.html` exists).
 
-            app = Flask(__name__)
+    2.  **`/api/new_game` Endpoint (0.25 - 0.5 hour)**
+        * Define route in `app.py`.
+        * Logic: generate random `secret_number` (1-1000), reset `attempts_count`, set `game_over = False`.
+        * Return JSON response.
+        * **Test (Manual):** Use Postman or browser to hit the endpoint. Check Flask console for `secret_number` (if printing for debug).
 
-            # Global variables for game state
-            secret_number = 0
-            attempts_count = 0
-            LEADERBOARD_FILE = 'leaderboard.json'
-            MAX_LEADERBOARD_ENTRIES = 5 # Optional: Limit leaderboard size
+    3.  **`/api/guess` Endpoint (0.5 - 1 hour)**
+        * Define `POST` route in `app.py`.
+        * Logic: get `player_guess` from JSON, validate input, increment `attempts_count`, compare with `secret_number`, set `feedback` and `game_over` status.
+        * Return JSON response.
+        * **Test (Manual):** Use Postman to `POST` various guesses. Check responses.
 
-            @app.route('/')
-            def home():
-                return render_template('index.html')
-
-            # ... (API endpoints will be added here) ...
-
-            if __name__ == '__main__':
-                app.run(debug=True)
-            ```
-        * **Test:** Run `python app.py`. Visiting `http://127.0.0.1:5000/` will error until `index.html` is created.
-
-    2.  **`/api/new_game` Endpoint (1 - 1.5 hours)**
-        * Define this route in `app.py`.
-        * Generate a new random integer (1-1000) for `secret_number`.
-        * Reset `attempts_count` to 0.
-        * Return a JSON response, e.g., `jsonify({'message': 'New game started! Guess a number between 1 and 1000.'})`.
-        * **Test:** Use your browser or Postman/Insomnia for `http://127.0.0.1:5000/api/new_game`.
-
-    3.  **`/api/guess` Endpoint (1.5 - 2 hours)**
-        * Define this `POST` route in `app.py`.
-        * Get `player_guess` from incoming JSON: `data = request.get_json()`, `player_guess = data.get('guess')`.
-        * **Basic Input Validation:** Check if `player_guess` is an integer.
-        * Increment `attempts_count`.
-        * Compare `player_guess` with `secret_number` (feedback: "low", "high", "correct").
-        * Determine `game_over` status.
-        * Return JSON: `jsonify({'feedback': feedback, 'attempts': attempts_count, 'game_over': game_over})`.
-        * **Test:** Use Postman/Insomnia to `POST` guesses.
-
-* **Key Learning:** Flask routing, request handling (JSON), JSON responses, basic Python logic.
+* **Key Learning:** Flask routing, request handling, JSON responses, global variables, basic Python logic.
 
 ---
 
-## Phase 2: Basic Frontend Structure & Interaction (HTML, JS) (Est. 3 - 4.5 hours)
+## Phase 1.5: Basic API Testing & GitHub Actions Integration (Est. 2.5 - 4 hours)
 
-* **Objective:** Create the HTML page and write JavaScript to call the backend APIs and update the page dynamically.
+* **Objective:** Write automated tests for the Phase 1 API endpoints using Pytest and set up a GitHub Actions workflow to run these tests.
+* **A. Introduction to Pytest & Writing Basic Tests (Locally) (1.5 - 2.5 hours)**
+    1.  **Ensure Pytest is Installed:** (`pip install pytest`).
+    2.  **Create/Update `requirements.txt`:** Run `pip freeze > requirements.txt`. Ensure `Flask` and `pytest` are listed.
+    3.  **Create Test File:** `tests/test_app.py`.
+    4.  **Write Tests in `tests/test_app.py`:**
+        * Set up a Pytest `client` fixture using `app.test_client()`.
+        * **Test `GET /` (Home Page):** Check for 200 status.
+        * **Test `GET /api/new_game`:** Check for 200 status, presence of 'message' in JSON response.
+        * **Test `POST /api/guess`:**
+            * Test flow: call `new_game` first.
+            * Test with a "low" or "high" guess (check feedback, attempts, game_over status).
+            * Test invalid input: missing 'guess' field (expect 400).
+            * Test invalid input: non-integer guess (expect 400).
+            * (Optional advanced: mock `random.randint` to test a "correct" guess reliably).
+    5.  **Run Tests Locally:** In terminal (root project directory), run `pytest`. Ensure all tests pass.
 
-* **Tasks:**
-    1.  **HTML Structure (`templates/index.html`) (1 - 1.5 hours)**
-        * Create `index.html` in `templates`.
-        * Basic HTML boilerplate.
-        * `<head>`: Title, link to `style.css` (`{{ url_for('static', filename='style.css') }}`).
-        * `<body>`: Layout sections (Header, Game Status & Feedback, Player Input, Game Control, Win State, Leaderboard) with `id` attributes for JS interaction.
-        * Link `script.js` at the *bottom* of `<body>` (`{{ url_for('static', filename='script.js') }}`).
-        * **Test:** Refresh `http://127.0.0.1:5000/`. See basic HTML.
+* **B. Introduction to GitHub Actions (0.5 hour)**
+    1.  Understand workflow basics (events, jobs, steps, runners).
+    2.  Workflow file location: `.github/workflows/`.
 
-    2.  **Basic CSS (`static/style.css`) (0.5 hours)**
-        * Create `style.css` in `static`.
-        * Add minimal CSS for basic layout (centering, margins, etc.).
-        * Style `#win-section` with `display: none;` initially.
+* **C. Creating a Simple GitHub Actions Workflow (0.5 - 1 hour)**
+    1.  Create `.github/workflows/python-app-test.yml`.
+    2.  Define workflow:
+        ```yaml
+        name: Python Application Test
 
-    3.  **JavaScript - Game Initialization & New Game (`static/script.js`) (0.5 - 1 hour)**
-        * Create `script.js` in `static`.
-        * Get DOM element references.
-        * `startNewGame()` function:
-            * `fetch('/api/new_game')`.
-            * Update feedback message, reset attempts on page to 0.
-            * Clear guess input, hide win section, show guess section.
-        * Event listener for "New Game" button to call `startNewGame()`.
-        * Call `startNewGame()` on page load.
-        * **Test:** Load page. New game starts. "New Game" button works.
+        on:
+          push:
+            branches: [ main, master, develop ] # Adjust to your branch names
+          pull_request:
+            branches: [ main, master, develop ]
 
-    4.  **JavaScript - Guess Submission & Feedback (1 - 1.5 hours)**
-        * `submitGuess()` function (or handle in event listener for "Submit Guess" button).
-        * Get guess value, convert to number. Basic frontend validation.
-        * `fetch('/api/guess', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({guess: guessValue}) })`.
-        * Process response: update feedback message, attempts counter.
-        * If correct: show "Win State" section, display final attempts, (optional) disable guess input.
-        * Clear guess input.
-        * **Test:** Play the game! Check feedback, attempts, win condition.
+        jobs:
+          build:
+            runs-on: ubuntu-latest
+            steps:
+            - name: Check out repository code
+              uses: actions/checkout@v4 # Use a recent version
+            - name: Set up Python
+              uses: actions/setup-python@v4 # Use a recent version
+              with:
+                python-version: '3.x' # e.g., '3.9', '3.10', '3.11'
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+            - name: Run tests with pytest
+              run: |
+                pytest tests/
+        ```
+    3.  Commit and push workflow file, tests, and `requirements.txt` to GitHub.
+    4.  Verify workflow runs successfully in the "Actions" tab of your GitHub repository.
 
-* **Key Learning:** HTML structure, basic CSS, DOM manipulation, `fetch` API (GET/POST), JSON handling in JS, event listeners.
+* **Key Learning:** Pytest basics (fixtures, assertions), Flask test client, testing API endpoints, GitHub Actions workflow syntax, basic CI concepts.
+
+---
+---
+
+## Phase 2: Basic Frontend Structure & Interaction (HTML, JS) (Est. 2 - 3.5 hours)
+
+* **Objective:** Create the HTML page for the "Quick Draw Numbers" game. Add basic CSS for presentation. Write JavaScript to enable user interaction, calling the backend APIs (`/api/new_game` and `/api/guess`) to make the game playable and dynamic.
+* **Prerequisites:** Phase 1 and 1.5 completed (backend APIs for new game and guess are functional and tested; Pytest setup is complete).
 
 ---
 
-## Phase 3: Leaderboard Implementation (Est. 3 - 4 hours)
+### 2.1. HTML Structure (`templates/index.html`) (Est. 0.75 - 1.25 hours)
 
-* **Objective:** Implement backend logic for JSON leaderboard storage and frontend display/submission.
+* **Concept Introduction:**
+    * **HTML (HyperText Markup Language):** The standard markup language for creating web pages. It describes the structure of a web page using elements (tags).
+    * **Semantic HTML:** Using HTML tags that convey the meaning (or semantics) of the content they enclose (e.g., `<header>`, `<main>`, `<section>`, `<article>`, `<nav>`, `<footer>`). This improves accessibility and SEO.
+    * **`id` Attribute:** A unique identifier for an HTML element. JavaScript uses `id`s to easily find and manipulate specific elements.
+    * **Linking External Files:**
+        * `<link rel="stylesheet" href="...">`: Used in the `<head>` to link CSS files.
+        * `<script src="..."></script>`: Used (typically at the end of `<body>`) to link JavaScript files.
+        * **Flask's `url_for()`:** In Flask templates, `url_for('static', filename='yourfile.css')` is the correct way to generate URLs for static files.
 
 * **Tasks:**
-    1.  **Backend - Leaderboard File Handling & `/api/leaderboard` GET (Flask) (1 - 1.5 hours)**
+    1.  **Create `index.html`:** In your `templates` folder.
+    2.  **Add HTML5 Boilerplate:** Include `<!DOCTYPE html>`, `<html>`, `<head>`, and `<body>` tags.
+    3.  **Setup `<head>`:**
+        * Include `<meta charset="UTF-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+        * Add a `<title>` for your game (e.g., "Quick Draw Numbers!").
+        * Link your `style.css` file (which you'll create next) using `url_for()`.
+    4.  **Structure `<body>`:**
+        * Based on the "Visual Design" sketch from our planning, lay out the main sections:
+            * Header (game title, instructions).
+            * Game Status & Feedback area (to display messages and attempts).
+            * Player Input section (label, number input, submit button – consider wrapping in a `<form>`).
+            * Game Control section (New Game button).
+            * Win State section (initially hidden, for win message and leaderboard name input).
+            * Leaderboard Display section (placeholder for the list).
+        * Assign unique and descriptive `id` attributes to all elements that your JavaScript will need to read from or write to (e.g., the feedback message paragraph, the attempts span, the guess input field, buttons, the win section div, etc.).
+    5.  **Link `script.js`:** At the *end* of your `<body>`, add a `<script>` tag to link your `script.js` file (which you'll create later) using `url_for()`.
+    6.  **Manual Test:**
+        * Ensure your Flask app (`app.py`) is running.
+        * Open `http://127.0.0.1:5000/` in your web browser.
+        * Verify the basic structure is visible (it will be unstyled for now). Check for any typos in your HTML.
+
+---
+
+### 2.2. Basic CSS (`static/style.css`) (Est. 0.25 - 0.5 hour)
+
+* **Concept Introduction:**
+    * **CSS (Cascading Style Sheets):** A language used to describe the presentation (look and formatting) of a document written in HTML.
+    * **Selectors:** Patterns used to select HTML elements you want to style (e.g., by tag name `p`, class `.my-class`, ID `#my-id`).
+    * **Properties & Values:** CSS rules consist of properties (e.g., `color`, `font-size`, `margin`, `display`) and their corresponding values.
+    * **`display: none;`:** A common CSS property used to hide an element (it won't take up any space on the page).
+
+* **Tasks:**
+    1.  **Create `style.css`:** In your `static` folder.
+    2.  **Add Basic Styling:**
+        * Apply some simple styles to `body` for font and basic page centering if desired.
+        * Style your main sections (perhaps using the `id`s you created) to have some `margin` for spacing.
+        * Style the feedback message area to make it noticeable.
+        * Style the `#win-section` with `display: none;` so it's hidden by default.
+        * (Optional) Add very basic styling to input fields and buttons to make them look a bit more distinct if you're not planning to use a framework like Bootstrap for this project.
+    3.  **Manual Test:**
+        * Refresh `http://127.0.0.1:5000/` in your browser.
+        * Your styles should now be applied. Verify the "Win State" section is hidden. Make small tweaks until it's reasonably presentable for now.
+
+---
+
+### 2.3. JavaScript - Game Initialization & New Game (`static/script.js`) (Est. 0.5 - 1 hour)
+
+* **Concept Introduction:**
+    * **JavaScript (JS):** A programming language that enables interactive web pages. It runs in the user's browser.
+    * **`DOMContentLoaded` Event:** An event that fires when the initial HTML document has been completely loaded and parsed, without waiting for stylesheets, images, and subframes to finish loading. It's a good place to start running your JS code that interacts with the DOM.
+    * **DOM (Document Object Model):** A programming interface for web documents. It represents the page so that programs can change the document structure, style, and content.
+    * **`document.getElementById('some-id')`:** A common method to get a reference to an HTML element by its `id`.
+    * **Element Properties:** Once you have an element reference, you can change its properties like `element.textContent`, `element.value` (for input fields), or `element.style.display`.
+    * **Event Listeners (`element.addEventListener('click', functionName)`):** Allow you to execute a JavaScript function when a specific event (like a button 'click') occurs on an element.
+    * **`fetch()` API:** A modern JavaScript interface for making network requests (e.g., to your Flask backend API). It returns a `Promise`.
+    * **`async/await`:** Syntactic sugar built on top of Promises, making asynchronous code easier to write and read as if it were synchronous. An `async` function can use the `await` keyword to pause execution until a Promise settles.
+        * `const response = await fetch('/api/url');`
+        * `const data = await response.json();` (to parse JSON response body)
+
+* **Tasks:**
+    1.  **Create `script.js`:** In your `static` folder.
+    2.  **Setup `DOMContentLoaded` Listener:** Wrap your main JavaScript logic in a `DOMContentLoaded` event listener to ensure the HTML is ready before your script tries to access elements.
+        ```javascript
+        document.addEventListener('DOMContentLoaded', () => {
+            // Your code will go here
+        });
+        ```
+    3.  **Get DOM Element References:** Inside the listener, use `document.getElementById()` to get references to all the HTML elements you'll need to interact with (feedback message area, attempts counter, guess input, buttons, win section, etc.). Store these in `const` variables.
+    4.  **Create `startNewGame()` Function:**
+        * This function should be `async`.
+        * Inside, use `await fetch('/api/new_game')` to call your backend endpoint.
+        * Check if `response.ok`. If not, handle the error (e.g., log it, show a message).
+        * Parse the JSON response using `await response.json()`.
+        * **Update UI:**
+            * Set the `textContent` of your feedback message element using the message from the API response.
+            * Set the `textContent` of your attempts counter element to '0'.
+            * Clear the `value` of the guess input field.
+            * Ensure the guess input field and its submit button are enabled/visible.
+            * Set the `style.display` of your "Win State" section to `'none'` to hide it.
+        * Add `console.log` statements to track what's happening for debugging.
+    5.  **Attach Event Listener:** Add an event listener to your "New Game" button that calls your `startNewGame` function when the button is clicked.
+    6.  **Initial Game Start:** Call `startNewGame()` once at the end of your `DOMContentLoaded` listener to initialize the first game when the page loads.
+    7.  **Manual Test:**
+        * Refresh `http://127.0.0.1:5000/`.
+        * Open your browser's Developer Console (usually F12, check the "Console" tab).
+        * Verify `startNewGame()` is called on page load and the UI updates as expected (feedback message, attempts).
+        * Click the "Start New Game" button and verify the game resets and UI updates.
+        * Check your Flask server console for `GET /api/new_game` requests.
+
+---
+
+### 2.4. JavaScript - Guess Submission & Feedback (`static/script.js`) (Est. 0.5 - 1.25 hours)
+
+* **Concept Introduction:**
+    * **Form Submission Event:** When working with an HTML `<form>`, the `submit` event is often used instead of a button's `click` event. This allows users to submit by pressing Enter in an input field.
+    * **`event.preventDefault()`:** If you're handling form submission with JavaScript (e.g., to make an API call instead of a traditional form post), you need to call `event.preventDefault()` at the start of your event handler function to stop the browser's default form submission behavior (which usually involves a page reload).
+    * **Reading Input Values:** `inputElement.value` gives you the current value of an input field.
+    * **`parseInt()`:** Converts a string to an integer.
+    * **`isNaN()`:** Checks if a value is "Not a Number." Useful for basic input validation.
+    * **`fetch()` for `POST`:** To make a `POST` request with a JSON body:
+        ```javascript
+        await fetch('/api/url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Important header
+            },
+            body: JSON.stringify({ key: value }), // Convert JS object to JSON string
+        });
+        ```
+    * **Conditional Logic (`if/else if/else`):** Used to handle different responses from the API (e.g., "low", "high", "correct").
+
+* **Tasks:**
+    1.  **Create `submitGuess(event)` Function:** Inside your `DOMContentLoaded` listener. This function should be `async`.
+        * The first line should be `event.preventDefault();` if you are attaching this to a form's `submit` event.
+        * Get the current value from your guess input element.
+        * Use `parseInt()` to convert the guess to an integer.
+        * **Basic Frontend Validation:**
+            * Check if the parsed guess is `NaN`. If so, update your feedback message element to tell the user to enter a valid number, and then `return` from the function (to stop further processing).
+            * (Optional) You could add a frontend check for the 1-1000 range here too.
+        * Use `await fetch('/api/guess', { ... })` to make a `POST` request to your backend:
+            * Set `method: 'POST'`.
+            * Set `headers: { 'Content-Type': 'application/json' }`.
+            * Set `body: JSON.stringify({ guess: yourParsedGuessValue })`.
+        * Check if `response.ok`. If not, parse the error JSON (if your API sends one for 400 errors) and display it, or show a generic error.
+        * Parse the successful JSON response using `await response.json()`.
+        * **Update UI based on API Response:**
+            * Set the `textContent` of your feedback message element with `data.feedback`.
+            * Set the `textContent` of your attempts counter element with `data.attempts_count` (ensure the key matches your API response).
+            * **Handle Win Condition:**
+                * If `data.game_over` is `true` (and/or `data.feedback` indicates a correct guess):
+                    * Set `style.display` of your "Win State" section to `'block'` (or your preferred visible display style like `'flex'`).
+                    * Update the `textContent` of the element within the win section that shows the final number of attempts (e.g., `id="final-attempts"`) using `data.attempts_count`.
+                    * (Optional) Store `data.attempts_count` in a global JavaScript variable (e.g., `currentWinAttempts`) if you need it for the leaderboard submission in Phase 3.
+                    * (Optional) Disable the guess input field and the "Submit Guess" button to prevent further guesses.
+                * Else (if the game is not over):
+                    * Clear the `value` of the guess input field.
+                    * Optionally, set focus back to the guess input field: `guessInputElement.focus()`.
+        * Add `console.log` statements for debugging.
+    2.  **Attach Event Listener:** Add an event listener to your guess `<form>` element for the `submit` event (or to your "Submit Guess" button for the `click` event, though form submission is generally better). This listener should call your `submitGuess` function.
+    3.  **Manual Test:**
+        * Refresh `http://127.0.0.1:5000/`.
+        * Play the game:
+            * Enter valid numbers and check if the feedback ("Too high!", "Too low!") and attempts count update correctly.
+            * Try to win the game. Verify the win section appears, the win message is correct, and further guessing is perhaps disabled.
+            * Test invalid inputs (e.g., text, empty) to see if your frontend validation (or API error if frontend validation is minimal) displays an appropriate message.
+        * Check your browser's Developer Console for logs and any JavaScript errors.
+        * Check your Flask server console for `POST /api/guess` requests.
+
+---
+
+* **Key Learning for Phase 2 (Reiteration):**
+    * Constructing an HTML page with semantic elements and `id`s for JavaScript interaction.
+    * Applying basic CSS for styling and layout control.
+    * Using `DOMContentLoaded` to safely execute JavaScript.
+    * Selecting and manipulating DOM elements (changing `textContent`, `value`, `style`).
+    * Handling user events like button clicks and form submissions (including `event.preventDefault()`).
+    * Making `async` `fetch` calls to `GET` and `POST` API endpoints.
+    * Properly formatting `POST` requests with JSON bodies and `Content-Type` headers.
+    * Processing JSON responses from APIs and dynamically updating the webpage.
+    * Implementing conditional logic in JavaScript to manage game state and UI changes.
+    * Basic frontend input validation.
+---
+
+## Phase 3: Leaderboard Implementation (Backend & Frontend) (Est. 2.5 - 3.5 hours total)
+
+* **Objective:** Implement backend logic and API endpoints for JSON leaderboard storage, write tests for these new APIs, and then implement frontend display/submission.
+
+* **Tasks:**
+    1.  **Backend - Leaderboard File Handling & API Endpoints (Flask) (1 - 1.5 hours)**
         * In `app.py`:
-            * `load_leaderboard()`: Reads `LEADERBOARD_FILE`. Handles file not found (return empty list) and JSON errors.
-            * `save_leaderboard(scores)`: Writes scores to `LEADERBOARD_FILE`.
-        * Implement `GET /api/leaderboard` endpoint: calls `load_leaderboard()`, returns scores as JSON.
-        * **Test:** Manually create `leaderboard.json` with dummy data. Hit `/api/leaderboard` via browser/Postman.
+            * Implement `load_leaderboard()` and `save_leaderboard(scores)` helper functions.
+            * Implement `GET /api/leaderboard` endpoint.
+            * Implement `POST /api/leaderboard` endpoint (receives name/attempts, updates JSON file).
+        * **Key Learning:** File I/O in Python (JSON), data structuring, more Flask routing.
 
-    2.  **Backend - `/api/leaderboard` POST (Flask) (0.5 - 1 hour)**
-        * Implement `POST /api/leaderboard` endpoint:
-            * Get `name` and `attempts` from request JSON.
-            * `scores = load_leaderboard()`.
-            * Add new score: `new_score = {"name": name, "attempts": int(attempts)}`.
-            * Append to `scores`. Sort by attempts (ascending).
-            * (Optional) Trim to `MAX_LEADERBOARD_ENTRIES`.
-            * `save_leaderboard(scores)`.
-            * Return success JSON.
-        * **Test:** Use Postman to `POST` scores. Check `leaderboard.json` updates.
+    2.  **Testing - Leaderboard APIs (Pytest) (0.5 - 1 hour)**
+        * In `tests/test_app.py`, add new tests for:
+            * `GET /api/leaderboard`: Check status, initial empty state, state after adding scores.
+            * `POST /api/leaderboard`: Check status, data validation (if any), file modification (can mock file system or check response). Check sorting and max entries if implemented.
+        * Run `pytest` locally and ensure new tests pass. Push to GitHub to verify CI.
+        * **Key Learning:** Testing file interactions (may require mocking for advanced tests or careful setup/teardown), testing data transformation.
 
-    3.  **Frontend - Display Leaderboard (JavaScript) (0.5 - 1 hour)**
-        * In `script.js`, `fetchAndDisplayLeaderboard()` function:
-            * `fetch('/api/leaderboard')`.
-            * Clear current leaderboard display (`id="leaderboard-list"`).
-            * Iterate scores, create `<li>` elements, append to display.
-            * Handle "No scores yet" message.
-        * Call on page load and after successful score submission.
-        * **Test:** Refresh page. Leaderboard displays.
-
-    4.  **Frontend - Submit Score to Leaderboard (JavaScript) (0.5 - 1 hour)**
-        * In `script.js`, event listener for "Add to Leaderboard" button (`id="submit-score-button"`).
-        * Get player name and win attempts (store attempts in a JS variable upon winning).
-        * Basic frontend validation (name not empty).
-        * `POST` name and attempts to `/api/leaderboard`.
-        * On success: call `fetchAndDisplayLeaderboard()`, hide win section (or just name input/submit part), show "Score submitted!" message.
-        * **Test:** Win game, submit score. Check leaderboard updates on page and in `leaderboard.json`.
-
-* **Key Learning:** File I/O in Python (JSON), data structuring, complex frontend-backend interaction, dynamic list generation.
+    3.  **Frontend - Leaderboard Display & Submission (JavaScript) (1 - 1.5 hours)**
+        * In `script.js`:
+            * `fetchAndDisplayLeaderboard()` function (calls `GET /api/leaderboard`).
+            * Logic for submitting score (calls `POST /api/leaderboard` when game is won).
+        * Update `index.html` for leaderboard display and name input.
+        * **Test (Manual):** Full game flow including winning and submitting/viewing leaderboard.
+        * **Key Learning:** More complex DOM updates, handling game state transitions on frontend.
 
 ---
 
-## Phase 4: Polish & Testing (Est. 1 - 1.5 hours)
+## Phase 4: Final Polish & Manual Testing (Est. 1 - 1.5 hours)
 
-* **Objective:** Final testing, bug fixing, and minor improvements.
-
+* **Objective:** Conduct thorough manual testing of the complete application, fix bugs, and make minor improvements to UI/UX.
 * **Tasks:**
-    1.  **Comprehensive Testing (0.5 - 1 hour)**
-        * Play multiple times. Test edge cases (non-numeric guess, empty name).
-        * Check browser and Flask consoles for errors.
-        * Verify `leaderboard.json` behavior (creation, updates, sorting).
-
-    2.  **Minor UI/UX Tweaks (0.5 hours)**
+    1.  **Comprehensive Manual Testing (0.5 - 1 hour)**
+        * Play through the entire game flow multiple times from different perspectives.
+        * Test edge cases not easily covered by automated tests (e.g., rapid clicks, unusual user inputs if not fully validated).
+        * Check browser console for errors.
+        * Verify `leaderboard.json` behavior under various conditions.
+        * Ensure GitHub Actions are still passing.
+    2.  **Minor UI/UX Tweaks & Code Cleanup (0.5 hours)**
         * Adjust CSS for clarity/spacing.
         * Ensure feedback messages are user-friendly.
         * Refine game flow (e.g., what happens after score submission).
+        * Review code for readability and add comments where necessary.
 
-* **Key Learning:** Debugging, importance of testing, user experience considerations.
+* **Key Learning:** Importance of end-to-end testing, user experience considerations, code refactoring basics.
 
 ---
 
-## Tips for Success in 10-15 Hours:
+## Phase 5: Deployment to Cloud (PythonAnywhere) (Est. 1.5 - 2.5 hours)
 
-* **KISS (Keep It Super Simple):** If behind, cut non-essential flair. Core game loop and API are key.
-* **Test Iteratively:** Test after almost every small task. Use `print()` and `console.log()`.
-* **Focus:** One thing at a time.
-* **Read Errors Carefully.**
-* **Perfection is the Enemy of Good:** Aim for *working*, not perfect.
-* **Use Online Resources:** MDN, Flask docs, Stack Overflow for specific issues.
+* **Objective:** Deploy the completed Flask application to PythonAnywhere so it's accessible online.
+* **Tasks:**
+    1.  **Sign up for PythonAnywhere:** Create a free "Beginner" account.
+    2.  **Update `requirements.txt`:** Ensure it's complete: `pip freeze > requirements.txt`. Commit and push.
+    3.  **Upload Files to PythonAnywhere:**
+        * Use the "Files" tab in PythonAnywhere to upload your `app.py`, `requirements.txt`, the `templates` directory (with `index.html`), and the `static` directory (with `style.css`, `script.js`).
+        * Alternatively, clone your GitHub repository directly into PythonAnywhere using their Bash console.
+    4.  **Create a Web App:**
+        * Go to the "Web" tab on PythonAnywhere.
+        * Add a new web app.
+        * Choose "Flask" and the Python version you used.
+        * It will auto-generate a WSGI configuration file.
+    5.  **Configure the WSGI File:**
+        * Edit the WSGI file (link found on the "Web" tab).
+        * Ensure the `path` variable points to the directory containing your `app.py`.
+        * Ensure it correctly imports your Flask `app` object (e.g., `from app import app as application`).
+    6.  **Install Dependencies:**
+        * Open a Bash console on PythonAnywhere.
+        * Navigate to your project directory.
+        * Create/activate a virtual environment (PythonAnywhere often guides you on this or sets one up).
+        * Run `pip install -r requirements.txt`.
+    7.  **Leaderboard File Permissions:**
+        * The `leaderboard.json` file will be created by your app. Ensure the directory where `app.py` resides is writable by your web app process. Typically, it will be created in the same directory as `app.py`.
+    8.  **Reload Web App & Test:**
+        * Go back to the "Web" tab on PythonAnywhere and click the "Reload <your-username>.pythonanywhere.com" button.
+        * Visit your live URL (`<your-username>.pythonanywhere.com`) and test all functionality.
+        * Check error logs on PythonAnywhere if something goes wrong.
+
+* **Key Learning:** Basic web deployment concepts, WSGI, managing dependencies on a server, file permissions, using a PaaS (Platform as a Service).
+
+---
+
+## Tips for Success:
+
+* **KISS (Keep It Super Simple):** If behind, cut non-essential flair. Core functionality and tests are key.
+* **Test Iteratively:** Test manually and run `pytest` after almost every small task.
+* **Commit Frequently:** Use Git to save your progress often with meaningful commit messages.
+* **Read Errors Carefully:** Error messages (from Python, Flask, Pytest, JavaScript console, GitHub Actions, PythonAnywhere logs) are crucial.
+* **Focus:** One task at a time.
+* **Perfection is the Enemy of Good:** Aim for *working and tested*, not perfect.
+* **Use Online Resources:** MDN, Flask/Pytest docs, GitHub Actions docs, PythonAnywhere help, Stack Overflow.
