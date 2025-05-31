@@ -83,6 +83,10 @@ The project will be developed in phases:
     * Debugging any issues found in the frontend or backend.
     * Minor UI/UX refinements for clarity and ease of use.
 
+### Future phases:
+* Update github actions to automatically push updates to PythonAnywhere (or other hosted platform)
+* Move high scores from local storage to database
+
 ## How to Run (Once Developed)
 
 1.  **Clone the repository:**
