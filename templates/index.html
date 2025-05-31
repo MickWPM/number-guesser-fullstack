@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Number guessing game.... its fun right?</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Number guesser</h1>
+                <p id="instructions">I am thinking of a number between 1 and 1000 - can you guess it?!</p>
+            </header>
+            <main>
+                <section id="game-interface">
+                    <div id="status-area">
+                        <p id="feedback-message">Make your first guess!</p>
+                        <p>Attempts: <span id="attempts-taken">0</span> </p>
+                    </div>
+
+                    <form id="guess-form">
+                        <label for="guess-input">Your Guess:</label>
+                        <input type="number" id="guess-input" name="guess" min="1" max="1000" required>
+                        <button type="submit" id="submit-guess-button">Submit Guess</button>
+                    </form>
+
+                    <div id="game-controls">
+                        <button type="button" id="new-game-button">Start New Game</button>
+                    </div>
+                </section>
+
+                <section id="win-section" style="display: none;">
+                    <h2>Congratulations! You guessed it in <span id="final-attempts">X</span> attemmpts!</h2>
+                    <form id="leaderboard-form">
+                        <input for="player-name" name="playerName" placeholder="Enter your name" maxlength="20">
+                        <button type="submit" id="submit-score-button">Add to leaderboard</button>
+                    </form>
+                </section>
+
+                <section id="leaderboard-display-section">
+                    <h2>Leaderboard</h2>
+                    <ol id="leaderboard-list">
+                        <li id="leaderboard-loading">Loading...</li>
+                    </ol>
+                </section>
+
+            </main>
+            <footer></footer>
+        </div> <script scr="{{url_for('static', filename='script.js')}}"></script>
+    </body>
+</html>
