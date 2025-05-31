@@ -15,5 +15,11 @@ MAX_LEADERBOARD_ENTRIES = 5
 def home():
     return render_template('index.html')
 
+@app.route('/api/new_game')
+def new_game():
+    secret_number = random.randint(MIN_NUMBER, MAX_NUMBER)
+    attempts_count = 0
+    return jsonify({'message':f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'})
+
 if __name__ == '__main__':
     app.run(debug=False)
