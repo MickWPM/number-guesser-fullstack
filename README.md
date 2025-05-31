@@ -42,6 +42,7 @@ This project serves as a hands-on exercise to understand client-server communica
 * **API:** Simple RESTful principles for frontend-backend communication.
 
 ## Development Plan Outline (Target: 10-15 hours)
+Detailed summary of the plan is includeded in the developed [Training Package](https://github.com/MickWPM/number-guesser-fullstack/blob/main/Training%20Package.md)
 
 The project will be developed in phases:
 
