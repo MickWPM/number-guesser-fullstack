@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Number guessing game.... its fun right?</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
     <body>
         <div class="container">
@@ -30,7 +30,7 @@
                     </div>
                 </section>
 
-                <section id="win-section" style="display: none;">
+                <section id="win-section">
                     <h2>Congratulations! You guessed it in <span id="final-attempts">X</span> attemmpts!</h2>
                     <form id="leaderboard-form">
                         <input for="player-name" name="playerName" placeholder="Enter your name" maxlength="20">

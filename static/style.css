@@ -1,0 +1,40 @@
+body{
+    font-family: cursive;
+    background-color: lightgrey;
+}
+
+
+.container{
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+section{
+    background-color: red;
+}
+
+#win-section{
+    display: none;
+}
+
+#game-controls
+{
+    padding: 10px;
+}
+
+#feedback-message {
+    font-weight: bold;         /* Makes the text bold */
+    color: #007bff;            /* A pleasant blue color, good for general feedback */
+    padding: 10px;             /* Adds some space inside the element's border */
+    border: 1px solid #ddd;    /* A light grey border around the message */
+    border-radius: 4px;        /* Slightly rounded corners for the border */
+    min-height: 1.5em;         /* Prevents the page layout from "jumping" too much 
+                                   when the text content changes from empty to one line.
+                                   'em' is relative to the font size. */
+    margin-top: 10px;          /* Add some space above it */
+    margin-bottom: 15px;       /* Add some space below it */
+    background-color: #f9f9f9; /* A very light background to make it stand out a bit */
+}
