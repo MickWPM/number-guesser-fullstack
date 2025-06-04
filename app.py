@@ -7,8 +7,8 @@ app = Flask(__name__)
 secret_number = 0
 attempts_count = 0
 game_over = False
-MIN_NUMBER = 0
-MAX_NUMBER = 10
+MIN_NUMBER = 1
+MAX_NUMBER = 1000
 LEADERBOARD_FILE = 'leaderboard.json'
 MAX_LEADERBOARD_ENTRIES = 5
 NEW_GAME_MESSAGE = f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'
@@ -18,6 +18,14 @@ GUESS_HIGH_MESSAGE = 'Too high! :('
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/api/game_info')
+def get_game_info():
+    return jsonify({
+        'min_num': MIN_NUMBER,
+        'max_num': MAX_NUMBER,
+        'game_description': 'Probably the greatest guessing game of all. Guess a number, be told too high or too low.... keep going till you get it!'
+    })
 
 @app.route('/api/new_game')
 def new_game():
