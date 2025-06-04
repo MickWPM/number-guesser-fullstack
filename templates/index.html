@@ -10,7 +10,7 @@
         <div class="container">
             <header>
                 <h1>Number guesser</h1>
-                <p id="instructions">I am thinking of a number between 1 and 1000 - can you guess it?!</p>
+                <p id="instructions">I am thinking of a number between <span id="min-num">9</span> and <span id="max-num">99</span> - can you guess it?!</p>
             </header>
             <main>
                 <section id="game-interface">
@@ -47,6 +47,6 @@
 
             </main>
             <footer></footer>
-        </div> <script scr="{{url_for('static', filename='script.js')}}"></script>
+        </div> <script src="{{url_for('static', filename='script.js')}}"></script>
     </body>
 </html>
