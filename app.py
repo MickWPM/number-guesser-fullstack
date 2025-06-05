@@ -38,7 +38,7 @@ def add_high_score():
     player_name = data.get('name')
     player_score = data.get('score')
     add_score_to_leaderboard(player_name, player_score)
-    return jsonify({'success':True}, 200)
+    return jsonify({'success':True})
 
 
 @app.route('/api/leaderboard', methods=['GET'])
