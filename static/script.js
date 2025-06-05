@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const guess_submit_button = document.getElementById("submit-guess-button");
     const guess_form = document.getElementById('guess-form')
     const win_screen_attempts_span = document.getElementById('final-attempts')
+    const submit_score_button = document.getElementById('submit-score-button')
+    const player_name = document.getElementById('playerName')
+    const leaderboard_list = document.getElementById('leaderboard-list')
 
     let winning_attempts;
 
@@ -85,10 +88,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function submit_high_score(){
+        event.preventDefault()
+        console.log('Submitting high score')
+        let playerName = document.querySelector("input[name='playerName']").value;
+        console.log(playerName)
+        const respose = await fetch('/api/leaderboard',
+            {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({'name': playerName, 'score':winning_attempts})
+            });
+            
+        if (respose.ok){
+            const msg = await respose.json()
+            feedback_element.innerHTML = 'High score submitted!'
+            console.log('High score submitted')
+            //REFRESH LEADERBOARD
+            update_high_scores()
+            new_game()
+        } else
+        {
+            feedback_element.innerHTML = 'Error.. Check console!'
+            console.log(respose.body)
+        }
+    }
+
+    async function update_high_scores()
+    {
+        console.log('Updating high scores')
+        const respose = await fetch('/api/leaderboard');
+        const scores = await respose.json()
+        let score_index = 0
+        let scorestring = ""
+        leaderboard_list.innerHTML = ''
+        if (scores.length == 0)
+        {
+            const noScoresLi = document.createElement('li');
+            noScoresLi.textContent = "No high scores yet! You can be the first!";
+            leaderboard_list.appendChild(noScoresLi);
+        } else
+        {
+            scores.forEach(score => {
+                const scoreLi = document.createElement('li');
+                // Set text content for the list item
+                // Using index + 1 for 1-based numbering
+                scoreLi.textContent = `${score.name} (${score.score})`; 
+                leaderboard_list.appendChild(scoreLi);
+            });
+        }
+    }
+
     new_game_button.addEventListener('click', new_game);
     guess_submit_button.addEventListener('click', submit_guess);
+    submit_score_button.addEventListener('click', submit_high_score)
 
     Setup();
+    update_high_scores();
     new_game();
 });
 

@@ -2,6 +2,7 @@ import pytest
 import json
 from app import app, NEW_GAME_MESSAGE, MIN_NUMBER, MAX_NUMBER
 from unittest.mock import patch
+import app as app_module
 
 @pytest.fixture
 def client():
@@ -43,3 +44,36 @@ def game_with_known_secret(client): # This new fixture uses the 'client' fixture
             "mock_randint": mock_randint_instance # So tests can make assertions on the mock if needed
         }
         # The 'patch' context manager automatically cleans up the mock when this fixture's scope ends
+
+
+@pytest.fixture(autouse=True)
+def manage_leaderboard_state(tmp_path, monkeypatch):
+    """
+    Fixture to manage the leaderboard file and HIGH_SCORES state for each test.
+    - Uses a temporary file for the leaderboard.
+    - Resets the in-memory HIGH_SCORES list.
+    - Calls load_leaderboard() to ensure a consistent starting state.
+    """
+    temp_leaderboard_file = tmp_path / "test_leaderboard.json"
+    
+    # Monkeypatch the app's global constant for the filename
+    monkeypatch.setattr(app_module, 'HIGH_SCORES_FILENAME', str(temp_leaderboard_file))
+
+    # Reset in-memory high scores list in the app module
+    app_module.HIGH_SCORES = []
+    
+    # If a temp file somehow exists from a prior (failed) run, clear it
+    if temp_leaderboard_file.exists():
+        temp_leaderboard_file.unlink()
+        
+    # Call load_leaderboard to ensure app starts with a clean slate
+    # (it will initialize HIGH_SCORES to [] if the temp file doesn't exist)
+    app_module.load_leaderboard()
+
+    yield # The test runs here
+
+    # Teardown: Clean up in-memory state and file (though tmp_path handles file deletion)
+    app_module.HIGH_SCORES = []
+    if temp_leaderboard_file.exists():
+        temp_leaderboard_file.unlink()
+
