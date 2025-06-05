@@ -14,8 +14,8 @@ MAX_LEADERBOARD_ENTRIES = 5
 NEW_GAME_MESSAGE = f'New game has started! Guess a number between {MIN_NUMBER} and {MAX_NUMBER}'
 GUESS_LOW_MESSAGE = 'Too low! :('
 GUESS_HIGH_MESSAGE = 'Too high! :('
-MAX_SCORES_TO_KEEP=50
-MAX_SCORES_TO_SHOW=10
+MAX_SCORES_TO_KEEP=10
+MAX_SCORES_TO_SHOW=5
 HIGH_SCORES = []
 HIGH_SCORES_FILENAME = "high_scores.json"
 
@@ -43,10 +43,11 @@ def add_high_score():
 
 @app.route('/api/leaderboard', methods=['GET'])
 def get_high_scores():
-    return jsonify(HIGH_SCORES)
+    global HIGH_SCORES, MAX_SCORES_TO_SHOW
+    return jsonify(HIGH_SCORES[:MAX_SCORES_TO_SHOW])
 
 def load_leaderboard():
-    global HIGH_SCORES_FILENAME, HIGH_SCORES
+    global HIGH_SCORES_FILENAME, HIGH_SCORES, MAX_SCORES_TO_KEEP
     
     if(os.path.exists(HIGH_SCORES_FILENAME)):
         try:
@@ -110,13 +111,14 @@ def add_score_to_leaderboard(name, score):
         score (int): Player's score.
         max_entries (int): Maximum number of entries to keep in the leaderboard.
     """
-    global HIGH_SCORES
+    global HIGH_SCORES, MAX_SCORES_TO_KEEP
     HIGH_SCORES.append({"name": name, "score": score})
     # Sort by score (lower is better)
     HIGH_SCORES.sort(key=lambda item: item['score'])
     # Keep only the top 'max_entries' scores
     HIGH_SCORES = HIGH_SCORES[:MAX_SCORES_TO_KEEP]
     print(f"Score for {name} ({score}) added. Leaderboard has {len(HIGH_SCORES)} entries.")
+    save_leaderboard()
 
 
 
@@ -158,4 +160,5 @@ def guess_number():
 
 
 if __name__ == '__main__':
+    load_leaderboard()
     app.run(debug=False)
